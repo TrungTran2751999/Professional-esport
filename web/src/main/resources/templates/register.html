@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+
+<head>
+    <th:block th:replace="cp/layout/header :: header-utils"/>
+    <th:block th:replace="cp/layout/header :: header-logo"/>
+    <th:block th:replace="cp/layout/header :: header-boostrap-v5"/>
+    <th:block th:replace="cp/layout/header :: header-fontawesome"/>
+    <th:block th:replace="cp/layout/header :: header-sweetalert2"/>
+    <th:block th:replace="cp/layout/header :: header-izitoast"/>
+    <th:block th:replace="cp/layout/header :: header-app-style"/>
+    <th:block th:replace="cp/layout/header :: header-login-staff"/>
+    <th:block th:replace="cp/layout/header :: header-loading"/>
+
+    <title>Legend Coffee</title>
+</head>
+
+<body>
+<div class="loader hide">
+    <div id="loading"></div>
+</div>
+
+<div class="register-card-container">
+    <div class="register-card">
+        <div class="login-card-logo">
+            <img src="/assets/img/logo-black.png"
+                 alt="logo">
+        </div>
+        <div class="register-card-header">
+            <h1>Đăng ký</h1>
+            <div>Đăng ký để sử dụng hệ thống</div>
+        </div>
+        <form class="register-card-form" id="formRegister">
+
+            <div class="form-item">
+                <span class="form-item-icon"><i class="fa-solid fa-face-rolling-eyes"></i></span>
+                <select class="form-select"
+                        id="roleRegister"
+                        name="roleRegister">
+                </select>
+            </div>
+
+            <div class="form-item">
+                <span class="form-item-icon"><i class="fa-solid fa-user-pen"></i></span>
+                <input type="email" placeholder="Nhập email" required autofocus
+                       id="emailRegister"
+                       name="emailRegister">
+            </div>
+
+            <div class="form-item">
+                <span class="form-item-icon"><i class="fa-solid fa-signature"></i>  </span>
+                <input type="text" placeholder="Nhập số họ tên" required
+                       id="fullNameRegister"
+                       name="fullNameRegister">
+            </div>
+
+            <div class="form-item">
+                <span class="form-item-icon"><i class="fa-solid fa-phone"></i></span>
+                <input type="text" placeholder="Nhập số điện thoại" required
+                       id="phoneRegister"
+                       name="phoneRegister">
+            </div>
+            <button type="button" id="btnRegister">Đăng ký</button>
+        </form>
+        <div class="register-card-footer">
+            Bạn đã có tài khoản? <a href="/login">Đăng nhập</a>.
+        </div>
+    </div>
+</div>
+
+<th:block th:replace="cp/layout/script :: script-jquery"/>
+<th:block th:replace="cp/layout/script :: script-jquery-validate"/>
+<th:block th:replace="cp/layout/script :: script-boostrap-v5"/>
+<th:block th:replace="cp/layout/script :: script-fontawesome"/>
+<th:block th:replace="cp/layout/script :: script-sweetalert2"/>
+<th:block th:replace="cp/layout/script :: script-izitoast"/>
+<th:block th:replace="cp/layout/script :: script-app"/>
+<th:block th:replace="cp/layout/script :: script-appUtils"/>
+
+<script>
+    const page = {
+        urls: {
+            getAllRoles: AppUtils.ROLE_API,
+            register: AppUtils.AUTH_URL + "/register"
+        },
+        elements: {},
+        commands: {},
+        initializeEventControl: {}
+    }
+
+    page.elements.loader = $(".loader");
+    page.elements.formRegister = $("#formRegister");
+    page.elements.roleRegister = $("#roleRegister");
+    page.elements.emailRegister = $("#emailRegister");
+    page.elements.fullNameRegister = $("#fullNameRegister");
+    page.elements.phoneRegister = $("#phoneRegister");
+    page.elements.btnRegister = $("#btnRegister");
+
+
+    page.commands.register = () => {
+
+        let username = page.elements.emailRegister.val();
+        let fullName = page.elements.fullNameRegister.val();
+        let phone = page.elements.phoneRegister.val();
+        let roleId = page.elements.roleRegister.val();
+
+        let dob = "2000-01-01"
+        let gender = "MALE"
+        let password = "";
+        let provinceId = "46";
+        let provinceName = "Tỉnh Thừa Thiên Huế";
+        let districtId = "474";
+        let districtName = "Thành phố Huế";
+        let wardId = "19804";
+        let wardName = "Phường Hương Sơ";
+        let address = "Nơi nào đó";
+
+        let formData = new FormData();
+
+        formData.append("fullName", fullName);
+        formData.append("phone", phone);
+        formData.append("dob", dob);
+        formData.append("gender", gender);
+        formData.append("username", username);
+        formData.append("password", password);
+        formData.append("roleId", roleId);
+        formData.append("provinceId", provinceId);
+        formData.append("provinceName", provinceName);
+        formData.append("districtId", districtId);
+        formData.append("districtName", districtName);
+        formData.append("wardId", wardId);
+        formData.append("wardName", wardName);
+        formData.append("address", address);
+
+        page.commands.showLoading();
+
+        $.ajax({
+            type: "POST",
+            contentType: false,
+            cache: false,
+            processData: false,
+            url: page.urls.register,
+            data: formData
+        })
+            .done((data) => {
+
+                page.elements.formRegister[0].reset();
+
+                AppUtils.IziToast.showSuccessAlertLeft("Tạo tài khoản <b>'" + data.fullName + "'</b> thành công.");
+
+                AppUtils.IziToast.showSuccessAlertLeft("Vui lòng kiểm tra email để cập nhật lại mật khẩu trước khi đăng nhập!");
+
+                setTimeout(function () {
+                    window.location.href = "/login";
+                }, 3000);
+
+            }).fail(function (jqXHR) {
+
+            if (jqXHR.responseJSON) {
+                if (jqXHR.responseJSON.message) {
+                    AppUtils.IziToast.showErrorAlertLeft(jqXHR.responseJSON.message);
+                } else {
+                    $.each(jqXHR.responseJSON, function (key, value) {
+                        AppUtils.IziToast.showErrorAlertLeft(value);
+                    });
+                }
+            } else {
+                AppUtils.SweetAlert.showError500();
+            }
+        })
+            .always(function () {
+                page.commands.closeLoading();
+            })
+    }
+
+    page.commands.getAllRole = () => {
+        page.commands.showLoading();
+        return $.ajax({
+            headers: {
+                "accept": "application/json",
+                "content-type": "application/json",
+            },
+            type: "GET",
+            url: page.urls.getAllRoles
+        })
+            .done((data) => {
+
+                data.map(item => {
+
+                    let str = `<option value="${item.id}">${item.code === "ADMIN" ? "Quản trị viên" : item.code === "CASHIER" ? "Thu ngân" : "Nhân viên"}</option>`;
+                    page.elements.roleRegister.append(str);
+
+                })
+            })
+            .fail((error) => {
+                console.log(error);
+            }).always(function () {
+                page.commands.closeLoading();
+            })
+    }
+
+
+    page.commands.showLoading = () => {
+        page.elements.loader.removeClass("hide");
+
+    }
+
+    page.commands.closeLoading = () => {
+        page.elements.loader.addClass("hide");
+
+    }
+
+    page.commands.loadData = () => {
+        page.commands.getAllRole();
+    }
+
+    page.initializeEventControl = () => {
+        page.elements.btnRegister.on("click", () => {
+            page.commands.register();
+        })
+    }
+
+    $(() => {
+        page.commands.loadData();
+        page.initializeEventControl();
+    });
+</script>
+</body>
+</html>
